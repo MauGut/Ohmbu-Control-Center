@@ -12,6 +12,7 @@ const panels = [
 
 let state = null;
 let focusIndex = 0;
+let menuSelectorVisible = true;
 const gamepadState = {
   buttons: new Map(),
   lastAxisMove: 0
@@ -51,8 +52,29 @@ function sensorInError(item) {
 
 function moistureColor(value) {
   const percent = Math.max(0, Math.min(100, Number(value) || 0));
-  const hue = 110 - percent * 1.1;
+  const hue = percent * 1.1;
   return `hsl(${hue}, 90%, 50%)`;
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, Number(value) || 0));
+}
+
+function arcPoint(cx, cy, radius, angle) {
+  const radians = (angle - 90) * Math.PI / 180;
+  return {
+    x: cx + radius * Math.cos(radians),
+    y: cy + radius * Math.sin(radians)
+  };
+}
+
+function arcPath(percent, startAngle = 250, endAngle = 70) {
+  const sweep = endAngle + 360 - startAngle;
+  const angle = startAngle + sweep * percent;
+  const start = arcPoint(100, 104, 72, startAngle);
+  const end = arcPoint(100, 104, 72, angle);
+  const largeArc = sweep * percent > 180 ? 1 : 0;
+  return `M ${start.x} ${start.y} A 72 72 0 ${largeArc} 1 ${end.x} ${end.y}`;
 }
 
 function renderSensorCard(item) {
@@ -67,7 +89,39 @@ function renderSensorCard(item) {
             <span class="moisture-fill" style="width:${percent}%; background:${moistureColor(percent)}"></span>
           </div>
           <div class="moisture-labels"><span>Bajo</span><span>Medio</span><span>Alto</span></div>
-          <strong>${percent}%</strong>
+        `}
+      </article>
+    `;
+  }
+  if (item.id === "wind") {
+    const value = clamp(item.value, 0, 50);
+    const percent = value / 50;
+    const dot = arcPoint(100, 104, 72, 250 + 180 * percent);
+    return `
+      <article class="card wind-card" tabindex="-1">
+        <small>${item.label}</small>
+        ${error ? `<strong class="error-value">ERROR!</strong>` : `
+          <svg class="wind-gauge" viewBox="0 0 200 128" aria-label="${item.label} ${value} km/h">
+            <path class="gauge-bg" d="${arcPath(1)}"></path>
+            <path class="gauge-fill" d="${arcPath(percent)}"></path>
+            <circle class="gauge-dot" cx="${dot.x}" cy="${dot.y}" r="6"></circle>
+          </svg>
+          <strong>${Math.round(value)}km/h</strong>
+        `}
+      </article>
+    `;
+  }
+  if (item.id === "noise") {
+    const percent = clamp(item.value, 0, 100);
+    return `
+      <article class="card noise-card" tabindex="-1">
+        <small>${item.label}</small>
+        ${error ? `<strong class="error-value">ERROR!</strong>` : `
+          <div class="noise-readout"><strong>${Math.round(percent)}%</strong></div>
+          <div class="noise-slider" aria-label="${item.label} ${percent}%">
+            <span class="noise-fill" style="height:${percent}%"></span>
+            <span class="noise-knob" style="bottom:calc(${percent}% - 8px)"></span>
+          </div>
         `}
       </article>
     `;
@@ -81,23 +135,39 @@ function renderSensorCard(item) {
 }
 
 function focusables() {
+  if (menuSelectorVisible) return Array.from(document.querySelectorAll("[data-nav-target]"));
   return Array.from(document.querySelectorAll("[data-nav-target], .card, .station, .camera"));
 }
 
 function syncFocusToPanel(panel) {
   const items = focusables();
+  if (!menuSelectorVisible) {
+    items.forEach((item) => item.classList.remove("arcade-focus"));
+    return;
+  }
   const activeIndex = items.findIndex((item) => item.dataset.navTarget === panel);
   focusIndex = activeIndex >= 0 ? activeIndex : Math.min(focusIndex, Math.max(items.length - 1, 0));
   updateFocus();
 }
 
+function refreshFocus() {
+  const items = focusables();
+  focusIndex = Math.min(focusIndex, Math.max(items.length - 1, 0));
+  updateFocus();
+}
+
 function updateFocus() {
   const items = focusables();
+  if (!menuSelectorVisible) {
+    items.forEach((item) => item.classList.remove("arcade-focus"));
+    return;
+  }
   items.forEach((item, index) => item.classList.toggle("arcade-focus", index === focusIndex));
   if (items[focusIndex]) items[focusIndex].scrollIntoView({ block: "nearest", inline: "nearest" });
 }
 
 function moveFocus(delta) {
+  if (!menuSelectorVisible) return;
   const items = focusables();
   if (!items.length) return;
   focusIndex = (focusIndex + delta + items.length) % items.length;
@@ -105,17 +175,24 @@ function moveFocus(delta) {
 }
 
 function acceptFocus() {
+  if (!menuSelectorVisible) return;
   const item = focusables()[focusIndex];
   const target = item?.dataset.navTarget;
-  if (target) window.location.href = `/${target}`;
+  if (target) {
+    menuSelectorVisible = false;
+    window.history.pushState({}, "", `/${target}`);
+    render();
+  }
 }
 
 function goBack() {
-  if (window.history.length > 1) {
-    window.history.back();
-  } else {
-    window.location.href = "/sensores";
+  if (!menuSelectorVisible) {
+    menuSelectorVisible = true;
+    syncFocusToPanel(currentPanel());
+    return;
   }
+  window.history.pushState({}, "", "/sensores");
+  render();
 }
 
 function renderNav(panel) {
@@ -246,7 +323,7 @@ function render() {
   renderStations();
   renderMain(panel);
   renderCameras();
-  syncFocusToPanel(panel);
+  refreshFocus();
 }
 
 async function sendArcadeInput(key) {
@@ -262,12 +339,13 @@ async function sendArcadeInput(key) {
 function applyArcadeAction(action) {
   if (!action) return;
   if (action.panel) {
+    menuSelectorVisible = false;
     window.history.pushState({}, "", `/${action.panel}`);
     render();
     return;
   }
-  if (action.type === "joystick_up" || action.type === "joystick_left") moveFocus(-1);
-  if (action.type === "joystick_down" || action.type === "joystick_right") moveFocus(1);
+  if (action.type === "joystick_up") moveFocus(-1);
+  if (action.type === "joystick_down") moveFocus(1);
   if (action.type === "accept") acceptFocus();
   if (action.type === "back") goBack();
 }
@@ -286,10 +364,10 @@ function pollGamepads() {
       const pressed = button.pressed || button.value > 0.5;
       if (pressed && !wasPressed) {
         if (index >= 0 && index <= 9) handleArcadeKey(String(index).padStart(2, "0"));
-        if (index === 12) handleArcadeKey("ArrowUp");
-        if (index === 13) handleArcadeKey("ArrowDown");
-        if (index === 14) handleArcadeKey("ArrowLeft");
-        if (index === 15) handleArcadeKey("ArrowRight");
+        if (index === 12) handleArcadeKey("ArrowDown");
+        if (index === 13) handleArcadeKey("ArrowUp");
+        if (index === 14) handleArcadeKey("ArrowRight");
+        if (index === 15) handleArcadeKey("ArrowLeft");
       }
       gamepadState.buttons.set(index, pressed);
     });
@@ -300,16 +378,16 @@ function pollGamepads() {
     if (now - gamepadState.lastAxisMove > 220) {
       if (y < -0.55) {
         gamepadState.lastAxisMove = now;
-        handleArcadeKey("ArrowUp");
+        handleArcadeKey("ArrowDown");
       } else if (y > 0.55) {
         gamepadState.lastAxisMove = now;
-        handleArcadeKey("ArrowDown");
+        handleArcadeKey("ArrowUp");
       } else if (x < -0.55) {
         gamepadState.lastAxisMove = now;
-        handleArcadeKey("ArrowLeft");
+        handleArcadeKey("ArrowRight");
       } else if (x > 0.55) {
         gamepadState.lastAxisMove = now;
-        handleArcadeKey("ArrowRight");
+        handleArcadeKey("ArrowLeft");
       }
     }
   }
