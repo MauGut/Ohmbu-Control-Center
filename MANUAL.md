@@ -49,6 +49,7 @@ Las secciones visibles del menu lateral son:
 ## Controles fisicos
 
 El panel arcade se interpreta como teclado en el navegador y tambien puede enviarse por `POST /api/arcade/input`.
+Si la placa USB aparece como controlador/gamepad en el navegador, el front la lee con Gamepad API: botones `00` a `09` y joystick por ejes/d-pad.
 
 | Boton | Accion |
 | --- | --- |

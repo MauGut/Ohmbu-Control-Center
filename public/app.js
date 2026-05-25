@@ -12,6 +12,10 @@ const panels = [
 
 let state = null;
 let focusIndex = 0;
+const gamepadState = {
+  buttons: new Map(),
+  lastAxisMove: 0
+};
 
 function currentPanel() {
   return window.location.pathname.replace("/", "") || "sensores";
@@ -38,6 +42,42 @@ function displayValue(item) {
   const balizaId = sensorMission[item.id];
   if (balizaId && !state.balizas[balizaId]?.enabled) return "ERROR!";
   return formatValue(item);
+}
+
+function sensorInError(item) {
+  const balizaId = sensorMission[item.id];
+  return Boolean(balizaId && !state.balizas[balizaId]?.enabled);
+}
+
+function moistureColor(value) {
+  const percent = Math.max(0, Math.min(100, Number(value) || 0));
+  const hue = 110 - percent * 1.1;
+  return `hsl(${hue}, 90%, 50%)`;
+}
+
+function renderSensorCard(item) {
+  const error = sensorInError(item);
+  if (item.id === "soil_moisture_1" || item.id === "soil_moisture_2") {
+    const percent = Math.max(0, Math.min(100, Number(item.value) || 0));
+    return `
+      <article class="card moisture-card" tabindex="-1">
+        <small>${item.label}</small>
+        ${error ? `<strong class="error-value">ERROR!</strong>` : `
+          <div class="moisture-track" aria-label="${item.label} ${percent}%">
+            <span class="moisture-fill" style="width:${percent}%; background:${moistureColor(percent)}"></span>
+          </div>
+          <div class="moisture-labels"><span>Bajo</span><span>Medio</span><span>Alto</span></div>
+          <strong>${percent}%</strong>
+        `}
+      </article>
+    `;
+  }
+  return `
+    <article class="card" tabindex="-1">
+      <small>${item.label}</small>
+      <strong class="${error ? "error-value" : ""}">${error ? "ERROR!" : formatValue(item)}</strong>
+    </article>
+  `;
 }
 
 function focusables() {
@@ -102,10 +142,10 @@ function renderCards(title, items, className = "") {
     <section>
       <div class="section-title"><span>${title}</span></div>
       <div class="cards ${className}">
-        ${Object.values(items).map((item) => `
+        ${Object.values(items).map((item) => className.includes("sensor-grid") ? renderSensorCard(item) : `
           <article class="card" tabindex="-1">
             <small>${item.label}</small>
-            <strong class="${displayValue(item) === "ERROR!" ? "error-value" : ""}">${displayValue(item)}</strong>
+            <strong>${formatValue(item)}</strong>
           </article>
         `).join("")}
       </div>
@@ -232,6 +272,50 @@ function applyArcadeAction(action) {
   if (action.type === "back") goBack();
 }
 
+async function handleArcadeKey(key) {
+  const result = await sendArcadeInput(key);
+  applyArcadeAction(result?.action);
+}
+
+function pollGamepads() {
+  const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+  const pad = Array.from(pads).find(Boolean);
+  if (pad) {
+    pad.buttons.forEach((button, index) => {
+      const wasPressed = gamepadState.buttons.get(index) || false;
+      const pressed = button.pressed || button.value > 0.5;
+      if (pressed && !wasPressed) {
+        if (index >= 0 && index <= 9) handleArcadeKey(String(index).padStart(2, "0"));
+        if (index === 12) handleArcadeKey("ArrowUp");
+        if (index === 13) handleArcadeKey("ArrowDown");
+        if (index === 14) handleArcadeKey("ArrowLeft");
+        if (index === 15) handleArcadeKey("ArrowRight");
+      }
+      gamepadState.buttons.set(index, pressed);
+    });
+
+    const now = performance.now();
+    const x = pad.axes[0] || 0;
+    const y = pad.axes[1] || 0;
+    if (now - gamepadState.lastAxisMove > 220) {
+      if (y < -0.55) {
+        gamepadState.lastAxisMove = now;
+        handleArcadeKey("ArrowUp");
+      } else if (y > 0.55) {
+        gamepadState.lastAxisMove = now;
+        handleArcadeKey("ArrowDown");
+      } else if (x < -0.55) {
+        gamepadState.lastAxisMove = now;
+        handleArcadeKey("ArrowLeft");
+      } else if (x > 0.55) {
+        gamepadState.lastAxisMove = now;
+        handleArcadeKey("ArrowRight");
+      }
+    }
+  }
+  window.requestAnimationFrame(pollGamepads);
+}
+
 socket.on("state:snapshot", (snapshot) => {
   state = snapshot;
   render();
@@ -243,9 +327,14 @@ window.addEventListener("keydown", async (event) => {
   const keys = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Enter", "Escape", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
   if (!keys.includes(event.key)) return;
   event.preventDefault();
-  const result = await sendArcadeInput(event.key);
-  applyArcadeAction(result?.action);
+  handleArcadeKey(event.key);
 });
+
+window.addEventListener("gamepadconnected", () => {
+  gamepadState.buttons.clear();
+});
+
+window.requestAnimationFrame(pollGamepads);
 
 fetch("/api/state").then((res) => res.json()).then((snapshot) => {
   state = snapshot;
