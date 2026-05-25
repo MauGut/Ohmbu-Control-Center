@@ -13,6 +13,15 @@ const panels = [
 let state = null;
 let focusIndex = 0;
 let menuSelectorVisible = true;
+let lastOperationalPanel = null;
+let garraRemoteActive = false;
+const garraControl = {
+  servo1: 55,
+  servo2: 90,
+  servo3: 30,
+  step: 2,
+  lastButtonRepeat: 0
+};
 const gamepadState = {
   buttons: new Map(),
   lastAxisMove: 0
@@ -71,8 +80,8 @@ function arcPoint(cx, cy, radius, angle) {
 function arcPath(percent, startAngle = 250, endAngle = 70) {
   const sweep = endAngle + 360 - startAngle;
   const angle = startAngle + sweep * percent;
-  const start = arcPoint(100, 104, 72, startAngle);
-  const end = arcPoint(100, 104, 72, angle);
+  const start = arcPoint(100, 116, 76, startAngle);
+  const end = arcPoint(100, 116, 76, angle);
   const largeArc = sweep * percent > 180 ? 1 : 0;
   return `M ${start.x} ${start.y} A 72 72 0 ${largeArc} 1 ${end.x} ${end.y}`;
 }
@@ -96,7 +105,7 @@ function renderSensorCard(item) {
   if (item.id === "wind") {
     const value = clamp(item.value, 0, 50);
     const percent = value / 50;
-    const dot = arcPoint(100, 104, 72, 250 + 180 * percent);
+    const dot = arcPoint(100, 116, 76, 250 + 180 * percent);
     return `
       <article class="card wind-card" tabindex="-1">
         <small>${item.label}</small>
@@ -188,11 +197,74 @@ function acceptFocus() {
 function goBack() {
   if (!menuSelectorVisible) {
     menuSelectorVisible = true;
+    syncOperationalMode(currentPanel());
     syncFocusToPanel(currentPanel());
     return;
   }
   window.history.pushState({}, "", "/sensores");
   render();
+}
+
+async function publishCommand(prototypeId, command, value) {
+  try {
+    await fetch(`/api/mqtt/command/${prototypeId}/${command}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value: String(value) })
+    });
+  } catch {
+    // Hardware/MQTT may be offline during UI testing.
+  }
+}
+
+function currentServoValue(servo, fallback) {
+  const value = Number(state?.actuators?.garra?.[servo]);
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function syncGarraValuesFromState() {
+  garraControl.servo1 = currentServoValue("servo1", garraControl.servo1);
+  garraControl.servo2 = currentServoValue("servo2", garraControl.servo2);
+  garraControl.servo3 = currentServoValue("servo3", garraControl.servo3);
+}
+
+function commandGarraServo(servo, delta) {
+  const limits = {
+    servo1: [0, 110],
+    servo2: [0, 180],
+    servo3: [0, 60]
+  };
+  const [min, max] = limits[servo];
+  const next = clamp((garraControl[servo] ?? currentServoValue(servo, min)) + delta, min, max);
+  garraControl[servo] = next;
+  publishCommand("garra", servo, Math.round(next));
+  render();
+}
+
+function handleGarraControl(action) {
+  if (!action || currentPanel() !== "garra" || menuSelectorVisible) return false;
+  if (action.type === "joystick_left") commandGarraServo("servo1", -garraControl.step);
+  if (action.type === "joystick_right") commandGarraServo("servo1", garraControl.step);
+  if (action.type === "joystick_up") commandGarraServo("servo2", garraControl.step);
+  if (action.type === "joystick_down") commandGarraServo("servo2", -garraControl.step);
+  if (action.type === "contextual_action_1") commandGarraServo("servo3", garraControl.step);
+  if (action.type === "contextual_action_2") commandGarraServo("servo3", -garraControl.step);
+  return ["joystick_left", "joystick_right", "joystick_up", "joystick_down", "contextual_action_1", "contextual_action_2"].includes(action.type);
+}
+
+function syncOperationalMode(panel) {
+  const operationalPanel = panel === "garra" && !menuSelectorVisible ? "garra" : null;
+  if (operationalPanel === lastOperationalPanel) return;
+  if (lastOperationalPanel === "garra" && garraRemoteActive) {
+    publishCommand("garra", "modo", "LOCAL");
+    garraRemoteActive = false;
+  }
+  if (operationalPanel === "garra") {
+    syncGarraValuesFromState();
+    publishCommand("garra", "modo", "REMOTO");
+    garraRemoteActive = true;
+  }
+  lastOperationalPanel = operationalPanel;
 }
 
 function renderNav(panel) {
@@ -244,6 +316,7 @@ function renderDebug() {
 }
 
 function renderModule(panel) {
+  if (panel === "garra") return renderGarraPanel();
   const module = state.modules.find((item) => item.id === panel);
   const station = state.stations[panel] || {};
   const prototypes = (module?.prototypes || []).map((id) => state.prototypes[id]).filter(Boolean);
@@ -275,6 +348,31 @@ function renderModule(panel) {
         ${actuatorCards}
       </div>
     </section>`;
+}
+
+function renderGarraPanel() {
+  const camera = state.cameras.streams[2] || state.cameras.streams[0];
+  return `
+    <section class="module-panel garra-panel">
+      <div class="garra-stage">
+        <article class="garra-camera">
+          ${camera ? `<img src="${camera.url}" alt="${camera.label}" onerror="this.removeAttribute('src')">` : ""}
+          <footer>${camera?.label || "Camara 3"}</footer>
+        </article>
+        <aside class="garra-controls">
+          <h1>Garra</h1>
+          <div class="control-line"><strong>Palanca izquierda/derecha</strong><span>Servo 1</span></div>
+          <div class="control-line"><strong>Palanca arriba/abajo</strong><span>Servo 2</span></div>
+          <div class="control-line"><strong>Boton A / Boton B</strong><span>Servo 3</span></div>
+          <div class="servo-readouts">
+            <article><small>Servo 1</small><strong>${Math.round(garraControl.servo1)}°</strong></article>
+            <article><small>Servo 2</small><strong>${Math.round(garraControl.servo2)}°</strong></article>
+            <article><small>Servo 3</small><strong>${Math.round(garraControl.servo3)}°</strong></article>
+          </div>
+        </aside>
+      </div>
+    </section>
+  `;
 }
 
 function renderMain(panel) {
@@ -317,6 +415,7 @@ function renderCameras() {
 function render() {
   if (!state) return;
   const panel = currentPanel();
+  syncOperationalMode(panel);
   document.getElementById("mqttStatus").textContent = state.mqtt.status;
   document.getElementById("activeScene").textContent = `${state.activeScene} - ${state.activeModule}`;
   renderNav(panel);
@@ -338,6 +437,7 @@ async function sendArcadeInput(key) {
 
 function applyArcadeAction(action) {
   if (!action) return;
+  if (handleGarraControl(action)) return;
   if (action.panel) {
     menuSelectorVisible = false;
     window.history.pushState({}, "", `/${action.panel}`);
@@ -373,6 +473,28 @@ function pollGamepads() {
     });
 
     const now = performance.now();
+    if (currentPanel() === "garra" && !menuSelectorVisible && now - garraControl.lastButtonRepeat > 220) {
+      if (pad.buttons[6]?.pressed || pad.buttons[6]?.value > 0.5) {
+        garraControl.lastButtonRepeat = now;
+        handleArcadeKey("06");
+      } else if (pad.buttons[7]?.pressed || pad.buttons[7]?.value > 0.5) {
+        garraControl.lastButtonRepeat = now;
+        handleArcadeKey("07");
+      } else if (pad.buttons[12]?.pressed || pad.buttons[12]?.value > 0.5) {
+        garraControl.lastButtonRepeat = now;
+        handleArcadeKey("ArrowDown");
+      } else if (pad.buttons[13]?.pressed || pad.buttons[13]?.value > 0.5) {
+        garraControl.lastButtonRepeat = now;
+        handleArcadeKey("ArrowUp");
+      } else if (pad.buttons[14]?.pressed || pad.buttons[14]?.value > 0.5) {
+        garraControl.lastButtonRepeat = now;
+        handleArcadeKey("ArrowRight");
+      } else if (pad.buttons[15]?.pressed || pad.buttons[15]?.value > 0.5) {
+        garraControl.lastButtonRepeat = now;
+        handleArcadeKey("ArrowLeft");
+      }
+    }
+
     const x = pad.axes[0] || 0;
     const y = pad.axes[1] || 0;
     if (now - gamepadState.lastAxisMove > 220) {
@@ -406,6 +528,15 @@ window.addEventListener("keydown", async (event) => {
   if (!keys.includes(event.key)) return;
   event.preventDefault();
   handleArcadeKey(event.key);
+});
+
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("[data-nav-target]");
+  if (!link) return;
+  event.preventDefault();
+  menuSelectorVisible = false;
+  window.history.pushState({}, "", `/${link.dataset.navTarget}`);
+  render();
 });
 
 window.addEventListener("gamepadconnected", () => {
