@@ -1,0 +1,95 @@
+{
+  "enabled": true,
+  "url": "mqtt://127.0.0.1:1883",
+  "clientId": "ohmbu-control-center-v2",
+  "connectTimeoutMs": 3000,
+  "reconnectPeriodMs": 5000,
+  "subscriptions": [
+    "ambientales/temp",
+    "ambientales/humedad",
+    "ambientales/co2",
+    "ambientales/presion",
+    "ambientales/estado",
+    "aerogenerador/voltaje",
+    "aerogenerador/estado",
+    "anemometro/velocidad",
+    "anemometro/estado",
+    "bici/rpm",
+    "bici/estado",
+    "campo/humedad1",
+    "campo/humedad2",
+    "campo/estado",
+    "represa/voltaje",
+    "represa/estado",
+    "vumetro/nivel",
+    "vumetro/estado",
+    "garra/estado/disp",
+    "garra/estado/modo",
+    "garra/estado/servo1",
+    "garra/estado/servo2",
+    "garra/estado/servo3",
+    "grua/estado/disp",
+    "grua/estado/modo",
+    "grua/estado/iman",
+    "chatarra/estado/disp",
+    "chatarra/estado/modo",
+    "chatarra/estado/motor1",
+    "chatarra/estado/motor2",
+    "fundicion/estado/disp",
+    "fundicion/estado/modo",
+    "fundicion/estado/motor1",
+    "fundicion/estado/motor2",
+    "fundicion/estado/motor3",
+    "fundicion/estado/rele",
+    "ciudad/estado/disp",
+    "ciudad/estado/rele1",
+    "ciudad/estado/rele2",
+    "/baliza/1/estado",
+    "/baliza/2/estado",
+    "/baliza/3/estado",
+    "/baliza/4/estado",
+    "/baliza/5/estado",
+    "/baliza/6/estado",
+    "/baliza/7/estado",
+    "/baliza/8/estado"
+  ],
+  "balizas": {
+    "1": { "label": "Mision Industria", "topic": "/baliza/1/estado", "modules": ["cintas", "grua"], "prototypes": ["chatarra", "fundicion", "grua"], "logic": "standard" },
+    "2": { "label": "Mision Movimiento", "topic": "/baliza/2/estado", "modules": ["bici"], "prototypes": ["bici"], "logic": "standard" },
+    "3": { "label": "Mision Navegacion", "topic": "/baliza/3/estado", "modules": ["ciudad"], "prototypes": ["ciudad"], "channel": "rele2", "logic": "inverted_city_relay" },
+    "4": { "label": "Mision Suelo Vivo", "topic": "/baliza/4/estado", "modules": ["campo"], "prototypes": ["campo"], "logic": "standard" },
+    "5": { "label": "Mision Energia", "topic": "/baliza/5/estado", "modules": ["ciudad", "represa"], "prototypes": ["ciudad", "represa"], "channel": "rele1", "logic": "inverted_city_relay_for_ciudad" },
+    "6": { "label": "Mision Viento", "topic": "/baliza/6/estado", "modules": ["aerogenerador", "anemometro"], "prototypes": ["aerogenerador", "anemometro"], "logic": "standard" },
+    "7": { "label": "Mision Ambiente", "topic": "/baliza/7/estado", "modules": ["ambientales", "vumetro"], "prototypes": ["ambientales", "vumetro"], "logic": "standard" },
+    "8": { "label": "Mision Carga", "topic": "/baliza/8/estado", "modules": ["garra"], "prototypes": ["garra"], "logic": "standard" }
+  },
+  "commands": {
+    "garra": {
+      "modo": "garra/cmd/modo",
+      "servo1": "garra/cmd/servo1",
+      "servo2": "garra/cmd/servo2",
+      "servo3": "garra/cmd/servo3"
+    },
+    "grua": {
+      "modo": "grua/cmd/modo",
+      "x": "grua/cmd/x",
+      "y": "grua/cmd/y",
+      "iman": "grua/cmd/iman"
+    },
+    "chatarra": {
+      "modo": "chatarra/cmd/modo",
+      "motor1": "chatarra/cmd/motor1",
+      "motor2": "chatarra/cmd/motor2"
+    },
+    "fundicion": {
+      "modo": "fundicion/cmd/modo",
+      "motor1": "fundicion/cmd/motor1",
+      "motor2": "fundicion/cmd/motor2",
+      "motor3": "fundicion/cmd/motor3"
+    },
+    "ciudad": {
+      "rele1": "ciudad/cmd/rele1",
+      "rele2": "ciudad/cmd/rele2"
+    }
+  }
+}

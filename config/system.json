@@ -1,0 +1,9 @@
+{
+  "name": "OHMBU Interactive Control Center V2",
+  "host": "0.0.0.0",
+  "port": 3000,
+  "defaultPanel": "sensores",
+  "defaultModule": "none",
+  "defaultScene": "escena_0",
+  "logLimit": 80
+}

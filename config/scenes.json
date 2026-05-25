@@ -1,0 +1,12 @@
+{
+  "scenes": [
+    { "id": "escena_0", "label": "Inicio del evento" },
+    { "id": "escena_1", "label": "Garra", "module": "garra", "panel": "garra" },
+    { "id": "escena_2", "label": "Ciudad", "module": "ciudad", "panel": "ciudad" },
+    { "id": "escena_3", "label": "Grua", "display": "Grúa", "module": "grua", "panel": "grua" },
+    { "id": "escena_4", "label": "Camion", "display": "Camión", "module": "camion", "panel": "camion" },
+    { "id": "escena_5", "label": "Cinta de minerales", "module": "cintas", "panel": "cintas" },
+    { "id": "escena_6", "label": "Cinta de fundicion", "module": "represa", "panel": "represa" },
+    { "id": "escena_7", "label": "Final evento" }
+  ]
+}

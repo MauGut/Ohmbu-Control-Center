@@ -1,0 +1,330 @@
+:root {
+  color-scheme: dark;
+  --bg: #091013;
+  --panel: #111b20;
+  --panel-2: #17252b;
+  --line: #2b3d44;
+  --text: #e6edf0;
+  --muted: #8fa3aa;
+  --green: #40d27d;
+  --red: #f05b57;
+  --amber: #f2b84b;
+  --cyan: #54c7d7;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Arial, sans-serif;
+  letter-spacing: 0;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr) 380px;
+  min-height: 100vh;
+}
+
+.sidebar,
+.camera-column {
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: 18px;
+}
+
+.camera-column {
+  border-right: 0;
+  border-left: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--cyan);
+  border-radius: 6px;
+  color: var(--cyan);
+  font-weight: 800;
+}
+
+.brand small,
+.section-title strong,
+.status-tile span,
+.card small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.nav {
+  display: grid;
+  gap: 8px;
+}
+
+.nav a,
+.tool-button {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-2);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.nav a.active {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.arcade-focus {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+  border-color: var(--amber) !important;
+}
+
+.status-tile,
+.stations-band,
+.module-panel,
+.debug-panel,
+.output-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.status-tile {
+  margin-top: 20px;
+  padding: 12px;
+}
+
+.main {
+  min-width: 0;
+  padding: 18px;
+}
+
+.stations-band {
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+.section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.section-title span {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.stations {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(64px, 1fr));
+  gap: 10px;
+}
+
+.station {
+  min-height: 72px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #0d1518;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 8px;
+  gap: 4px;
+}
+
+.station strong {
+  font-size: 13px;
+  line-height: 1.15;
+}
+
+.station .dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 14px rgba(240, 91, 87, 0.45);
+}
+
+.station.enabled .dot {
+  background: var(--green);
+  box-shadow: 0 0 14px rgba(64, 210, 125, 0.45);
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.sensor-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.energy-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.card {
+  min-height: 136px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card strong {
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+.sensor-grid .card strong {
+  font-size: 34px;
+}
+
+.error-value {
+  color: var(--red);
+}
+
+.module-panel,
+.debug-panel,
+.output-panel {
+  padding: 18px;
+}
+
+.module-panel h1,
+.debug-panel h1,
+.output-panel h1 {
+  margin: 0 0 12px;
+  font-size: 28px;
+}
+
+.module-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.cameras {
+  display: grid;
+  gap: 12px;
+}
+
+.camera {
+  min-height: 168px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0c1417;
+  overflow: hidden;
+}
+
+.camera img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  background: linear-gradient(135deg, #132329, #162b2f);
+}
+
+.camera footer {
+  padding: 8px 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+pre {
+  max-height: 62vh;
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #070c0e;
+  color: #cfe6ea;
+}
+
+.output-mode .sidebar,
+.output-mode .camera-column {
+  display: none;
+}
+
+.output-mode.app-shell {
+  grid-template-columns: 1fr;
+}
+
+.output-panel {
+  min-height: calc(100vh - 36px);
+  display: grid;
+  align-content: center;
+}
+
+.output-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 20px;
+}
+
+@media (max-width: 1000px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar,
+  .camera-column {
+    border: 0;
+  }
+
+  .stations {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .sensor-grid,
+  .energy-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .stations,
+  .output-metrics,
+  .sensor-grid,
+  .energy-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .main,
+  .sidebar,
+  .camera-column {
+    padding: 12px;
+  }
+}

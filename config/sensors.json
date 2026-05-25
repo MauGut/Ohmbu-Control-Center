@@ -1,0 +1,18 @@
+{
+  "sensors": [
+    { "id": "soil_moisture_1", "label": "Humedad de tierra 1", "unit": "%", "default": 0, "topic": "campo/humedad1" },
+    { "id": "soil_moisture_2", "label": "Humedad de tierra 2", "unit": "%", "default": 0, "topic": "campo/humedad2" },
+    { "id": "temperature", "label": "Temperatura", "unit": "°C", "default": 0, "topic": "ambientales/temp" },
+    { "id": "humidity", "label": "Humedad", "unit": "%", "default": 0, "topic": "ambientales/humedad" },
+    { "id": "noise", "label": "Ruido", "unit": "%", "default": 0, "topic": "vumetro/nivel" },
+    { "id": "pressure", "label": "Presión atmosférica", "unit": "hPa", "default": 0, "topic": "ambientales/presion" },
+    { "id": "wind", "label": "Sensor de viento", "unit": "km/h", "default": 0, "topic": "anemometro/velocidad" },
+    { "id": "co2", "label": "CO2", "unit": "", "default": 0, "topic": "ambientales/co2" },
+    { "id": "crank_rpm", "label": "RPM de manivela", "unit": "rpm", "default": 0, "topic": "bici/rpm" }
+  ],
+  "energy": [
+    { "id": "dam_voltage", "label": "Voltaje de represa", "unit": "V", "default": 0, "topic": "represa/voltaje" },
+    { "id": "solar_voltage", "label": "Voltaje de panel", "unit": "V", "default": 0, "topic": "/baliza/5/estado" },
+    { "id": "wind_voltage", "label": "Voltaje de aerogenerador", "unit": "V", "default": 0, "topic": "aerogenerador/voltaje" }
+  ]
+}

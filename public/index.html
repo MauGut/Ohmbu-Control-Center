@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OHMBU Control Center V2</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <aside class="sidebar" aria-label="Panel de control">
+        <div class="brand">
+          <span class="brand-mark">OH</span>
+          <div>
+            <strong>Panel de control</strong>
+            <small>Control Center V2</small>
+          </div>
+        </div>
+        <nav id="panelNav" class="nav"></nav>
+        <div class="status-tile">
+          <span>MQTT</span>
+          <strong id="mqttStatus">offline</strong>
+        </div>
+      </aside>
+
+      <main class="main">
+        <section class="stations-band">
+          <div class="section-title">
+            <span>Estaciones</span>
+            <strong id="activeScene">escena_0</strong>
+          </div>
+          <div id="stations" class="stations"></div>
+        </section>
+
+        <section id="content" class="content"></section>
+      </main>
+
+      <aside id="cameraColumn" class="camera-column">
+        <div class="section-title">
+          <span>Cámaras</span>
+          <strong id="cameraGroup">sensores</strong>
+        </div>
+        <div id="cameras" class="cameras"></div>
+      </aside>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

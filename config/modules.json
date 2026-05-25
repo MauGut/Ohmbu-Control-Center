@@ -1,0 +1,23 @@
+{
+  "panels": ["sensores", "camaras", "garra", "ciudad", "grua", "camion", "cintas", "represa", "debug", "output"],
+  "modules": [
+    { "id": "garra", "label": "Garra", "station": true, "prototypes": ["garra"], "balizas": ["8"] },
+    { "id": "ciudad", "label": "Ciudad", "station": true, "prototypes": ["ciudad"], "balizas": ["3", "5"] },
+    { "id": "grua", "label": "Grua", "display": "Grúa", "station": true, "prototypes": ["grua"], "balizas": ["1"] },
+    { "id": "camion", "label": "Camion", "display": "Camión", "station": true, "prototypes": [], "balizas": [] },
+    { "id": "cintas", "label": "Cinta de minerales", "display": "Cinta de minerales", "station": true, "prototypes": ["chatarra"], "balizas": ["1"] },
+    { "id": "represa", "label": "Cinta de fundicion", "display": "Cinta de fundicion", "station": true, "prototypes": ["fundicion"], "balizas": ["1"] }
+  ],
+  "sensorPrototypes": [
+    { "id": "ambientales", "label": "Ambientales", "balizas": ["7"] },
+    { "id": "aerogenerador", "label": "Aerogenerador", "balizas": ["6"] },
+    { "id": "anemometro", "label": "Anemómetro", "balizas": ["6"] },
+    { "id": "bici", "label": "Bici", "balizas": ["2"] },
+    { "id": "campo", "label": "Humedad en suelo", "balizas": ["4"] },
+    { "id": "vumetro", "label": "Vúmetro", "balizas": ["7"] }
+  ],
+  "optionalStations": [
+    { "id": "inicio", "label": "Inicio" },
+    { "id": "final", "label": "Final" }
+  ]
+}
