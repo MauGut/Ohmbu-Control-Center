@@ -19,7 +19,7 @@ const garraControl = {
   servo1: 55,
   servo2: 90,
   servo3: 30,
-  step: 2,
+  step: 4,
   lastButtonRepeat: 0
 };
 const gamepadState = {
@@ -243,13 +243,26 @@ function commandGarraServo(servo, delta) {
 
 function handleGarraControl(action) {
   if (!action || currentPanel() !== "garra" || menuSelectorVisible) return false;
-  if (action.type === "joystick_left") commandGarraServo("servo1", -garraControl.step);
-  if (action.type === "joystick_right") commandGarraServo("servo1", garraControl.step);
-  if (action.type === "joystick_up") commandGarraServo("servo2", garraControl.step);
-  if (action.type === "joystick_down") commandGarraServo("servo2", -garraControl.step);
+  if (action.type === "joystick_left") commandGarraServo("servo2", -garraControl.step);
+  if (action.type === "joystick_right") commandGarraServo("servo2", garraControl.step);
+  if (action.type === "joystick_up") commandGarraServo("servo1", garraControl.step);
+  if (action.type === "joystick_down") commandGarraServo("servo1", -garraControl.step);
   if (action.type === "contextual_action_1") commandGarraServo("servo3", garraControl.step);
   if (action.type === "contextual_action_2") commandGarraServo("servo3", -garraControl.step);
   return ["joystick_left", "joystick_right", "joystick_up", "joystick_down", "contextual_action_1", "contextual_action_2"].includes(action.type);
+}
+
+function handleCiudadControl(action) {
+  if (!action || currentPanel() !== "ciudad" || menuSelectorVisible) return false;
+  if (action.type === "contextual_action_1") {
+    publishCommand("ciudad", "rele1", "ON");
+    return true;
+  }
+  if (action.type === "contextual_action_2") {
+    publishCommand("ciudad", "rele1", "OFF");
+    return true;
+  }
+  return false;
 }
 
 function syncOperationalMode(panel) {
@@ -317,6 +330,7 @@ function renderDebug() {
 
 function renderModule(panel) {
   if (panel === "garra") return renderGarraPanel();
+  if (panel === "ciudad") return renderCiudadPanel();
   const module = state.modules.find((item) => item.id === panel);
   const station = state.stations[panel] || {};
   const prototypes = (module?.prototypes || []).map((id) => state.prototypes[id]).filter(Boolean);
@@ -361,13 +375,36 @@ function renderGarraPanel() {
         </article>
         <aside class="garra-controls">
           <h1>Garra</h1>
-          <div class="control-line"><strong>Palanca izquierda/derecha</strong><span>Servo 1</span></div>
-          <div class="control-line"><strong>Palanca arriba/abajo</strong><span>Servo 2</span></div>
+          <div class="control-line"><strong>Palanca arriba/abajo</strong><span>Servo 1</span></div>
+          <div class="control-line"><strong>Palanca izquierda/derecha</strong><span>Servo 2</span></div>
           <div class="control-line"><strong>Boton A / Boton B</strong><span>Servo 3</span></div>
           <div class="servo-readouts">
             <article><small>Servo 1</small><strong>${Math.round(garraControl.servo1)}°</strong></article>
             <article><small>Servo 2</small><strong>${Math.round(garraControl.servo2)}°</strong></article>
             <article><small>Servo 3</small><strong>${Math.round(garraControl.servo3)}°</strong></article>
+          </div>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+
+function renderCiudadPanel() {
+  const camera = state.cameras.streams[0];
+  const rele = state.actuators?.ciudad?.rele1 || "sin dato";
+  return `
+    <section class="module-panel operation-panel">
+      <div class="garra-stage">
+        <article class="garra-camera">
+          ${camera ? `<img src="${camera.url}" alt="${camera.label}" onerror="this.removeAttribute('src')">` : ""}
+          <footer>${camera?.label || "Camara Ciudad"}</footer>
+        </article>
+        <aside class="garra-controls">
+          <h1>Ciudad</h1>
+          <div class="control-line"><strong>Boton A</strong><span>Activar energia</span></div>
+          <div class="control-line"><strong>Boton B</strong><span>Cortar energia</span></div>
+          <div class="servo-readouts">
+            <article><small>Rele 1</small><strong>${rele}</strong></article>
           </div>
         </aside>
       </div>
@@ -438,6 +475,7 @@ async function sendArcadeInput(key) {
 function applyArcadeAction(action) {
   if (!action) return;
   if (handleGarraControl(action)) return;
+  if (handleCiudadControl(action)) return;
   if (action.panel) {
     menuSelectorVisible = false;
     window.history.pushState({}, "", `/${action.panel}`);
@@ -473,7 +511,7 @@ function pollGamepads() {
     });
 
     const now = performance.now();
-    if (currentPanel() === "garra" && !menuSelectorVisible && now - garraControl.lastButtonRepeat > 220) {
+    if (currentPanel() === "garra" && !menuSelectorVisible && now - garraControl.lastButtonRepeat > 150) {
       if (pad.buttons[6]?.pressed || pad.buttons[6]?.value > 0.5) {
         garraControl.lastButtonRepeat = now;
         handleArcadeKey("06");
@@ -497,7 +535,7 @@ function pollGamepads() {
 
     const x = pad.axes[0] || 0;
     const y = pad.axes[1] || 0;
-    if (now - gamepadState.lastAxisMove > 220) {
+    if (now - gamepadState.lastAxisMove > 150) {
       if (y < -0.55) {
         gamepadState.lastAxisMove = now;
         handleArcadeKey("ArrowDown");
