@@ -3,9 +3,10 @@
   "go2rtcBaseUrl": "http://localhost:1984",
   "streamPathTemplate": "/api/stream.mjpeg?src={stream}",
   "cameras": [
-    { "id": "cam_cintas", "label": "Cam Cintas", "stream": "cam_cintas" },
     { "id": "cam_camion", "label": "Cam Camion", "stream": "cam_camion" },
     { "id": "cam_garra", "label": "Cam Garra", "stream": "cam_garra" },
+    { "id": "cam_cintas_f", "label": "Cam Cinta de fundicion", "stream": "cam_cintas_f" },
+    { "id": "cam_cintas", "label": "Cam Cintas", "stream": "cam_cintas" },
     { "id": "cam_grua", "label": "Cam Grua", "stream": "cam_grua" },
     { "id": "cam_ciudad", "label": "Cam Ciudad", "stream": "cam_ciudad" }
   ],

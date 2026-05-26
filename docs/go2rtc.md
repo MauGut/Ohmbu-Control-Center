@@ -40,14 +40,15 @@ Configuracion actual:
 
 ```yaml
 streams:
-  cam_cintas: http://192.168.88.150:81/stream
-  cam_camion: http://192.168.88.151:81/stream
-  cam_garra: http://192.168.88.153:81/stream
+  cam_camion: http://192.168.88.150:81/stream
+  cam_garra: http://192.168.88.151:81/stream
+  cam_cintas_f: http://192.168.88.152:81/stream
+  cam_cintas: http://192.168.88.153:81/stream
   cam_grua: http://192.168.88.154:81/stream
-  cam_ciudad: http://192.168.88.156:81/stream
+  cam_ciudad: http://192.168.88.155:81/stream
 ```
 
-Estas son las cinco camaras disponibles hoy. Si se suman mas ESP32-CAM, se agregan nuevos streams aca y en `config/video.json`.
+Estas son las seis camaras disponibles hoy. Si se suman mas ESP32-CAM, se agregan nuevos streams aca y en `config/video.json`.
 
 ## URLs de prueba
 
@@ -58,6 +59,7 @@ http://localhost:1984/api/stream.mjpeg?src=cam_garra
 http://localhost:1984/api/stream.mjpeg?src=cam_camion
 http://localhost:1984/api/stream.mjpeg?src=cam_grua
 http://localhost:1984/api/stream.mjpeg?src=cam_cintas
+http://localhost:1984/api/stream.mjpeg?src=cam_cintas_f
 http://localhost:1984/api/stream.mjpeg?src=cam_ciudad
 ```
 
@@ -66,9 +68,10 @@ Stream directo desde ESP32-CAM, util para diagnostico:
 ```text
 http://192.168.88.150:81/stream
 http://192.168.88.151:81/stream
+http://192.168.88.152:81/stream
 http://192.168.88.153:81/stream
 http://192.168.88.154:81/stream
-http://192.168.88.156:81/stream
+http://192.168.88.155:81/stream
 ```
 
 ## Notas
