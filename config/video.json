@@ -8,7 +8,9 @@
     { "id": "cam_grua", "label": "Cam Grua", "stream": "cam_grua" },
     { "id": "cam_camion", "label": "Cam Camion", "stream": "cam_camion" },
     { "id": "cam_cintas", "label": "Cam Cintas", "stream": "cam_cintas" },
-    { "id": "cam_represa", "label": "Cam Represa", "stream": "cam_represa" }
+    { "id": "cam_represa", "label": "Cam Represa", "stream": "cam_represa" },
+    { "id": "cam_extra_7", "label": "Cam Extra 7", "stream": "cam_extra_7" },
+    { "id": "cam_extra_8", "label": "Cam Extra 8", "stream": "cam_extra_8" }
   ],
   "groups": {
     "sensores": ["cam_garra", "cam_ciudad", "cam_represa"],

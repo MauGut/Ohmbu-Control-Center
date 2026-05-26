@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "node src/server.js",
     "start": "node src/server.js",
+    "go2rtc": "powershell -ExecutionPolicy Bypass -File scripts/start-go2rtc.ps1",
     "check": "node --check src/server.js && node --check src/state.js && node --check src/arcade.js && node --check src/mqttAdapter.js && node --check src/oscAdapter.js && node --check src/config.js"
   },
   "dependencies": {
