@@ -8,8 +8,8 @@ webrtc:
   listen: ":8555"
 
 streams:
-  cam_cintas: http://192.168.88.150:81/stream
-  cam_camion: http://192.168.88.151:81/stream
-  cam_garra: http://192.168.88.153:81/stream
-  cam_grua: http://192.168.88.154:81/stream
-  cam_ciudad: http://192.168.88.156:81/stream
+  cam_camion: http://192.168.88.150:81/stream   1
+  cam_garra: http://192.168.88.151:81/stream    3
+  cam_cintas: http://192.168.88.153:81/stream   50
+  cam_grua: http://192.168.88.154:81/stream     4
+  cam_ciudad: http://192.168.88.155:81/stream   5
