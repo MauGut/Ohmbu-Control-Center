@@ -15,6 +15,13 @@ let focusIndex = 0;
 let menuSelectorVisible = true;
 let lastOperationalPanel = null;
 let garraRemoteActive = false;
+const operationalModes = {
+  garra: ["garra"],
+  grua: ["grua"],
+  camion: ["camion"],
+  cintas: ["chatarra"],
+  represa: ["fundicion"]
+};
 const garraControl = {
   servo1: 55,
   servo2: 90,
@@ -77,13 +84,13 @@ function arcPoint(cx, cy, radius, angle) {
   };
 }
 
-function arcPath(percent, startAngle = 250, endAngle = 70) {
+function arcPath(percent, startAngle = 250, endAngle = 70, cx = 100, cy = 128, radius = 92) {
   const sweep = endAngle + 360 - startAngle;
   const angle = startAngle + sweep * percent;
-  const start = arcPoint(100, 116, 76, startAngle);
-  const end = arcPoint(100, 116, 76, angle);
+  const start = arcPoint(cx, cy, radius, startAngle);
+  const end = arcPoint(cx, cy, radius, angle);
   const largeArc = sweep * percent > 180 ? 1 : 0;
-  return `M ${start.x} ${start.y} A 72 72 0 ${largeArc} 1 ${end.x} ${end.y}`;
+  return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x} ${end.y}`;
 }
 
 function renderSensorCard(item) {
@@ -105,12 +112,12 @@ function renderSensorCard(item) {
   if (item.id === "wind") {
     const value = clamp(item.value, 0, 50);
     const percent = value / 50;
-    const dot = arcPoint(100, 116, 76, 250 + 180 * percent);
+    const dot = arcPoint(100, 128, 92, 250 + 180 * percent);
     return `
       <article class="card wind-card" tabindex="-1">
         <small>${item.label}</small>
         ${error ? `<strong class="error-value">ERROR!</strong>` : `
-          <svg class="wind-gauge" viewBox="0 0 200 128" aria-label="${item.label} ${value} km/h">
+          <svg class="wind-gauge" viewBox="0 0 200 152" aria-label="${item.label} ${value} km/h">
             <path class="gauge-bg" d="${arcPath(1)}"></path>
             <path class="gauge-fill" d="${arcPath(percent)}"></path>
             <circle class="gauge-dot" cx="${dot.x}" cy="${dot.y}" r="6"></circle>
@@ -265,17 +272,91 @@ function handleCiudadControl(action) {
   return false;
 }
 
+function handleGruaControl(action) {
+  if (!action || currentPanel() !== "grua" || menuSelectorVisible) return false;
+  const commands = {
+    joystick_left: ["x", "IZQUIERDA"],
+    joystick_right: ["x", "DERECHA"],
+    joystick_up: ["y", "ADELANTE"],
+    joystick_down: ["y", "ATRAS"],
+    contextual_action_1: ["iman", "ON"],
+    contextual_action_2: ["iman", "OFF"]
+  };
+  const command = commands[action.type];
+  if (!command) return false;
+  publishCommand("grua", command[0], command[1]);
+  return true;
+}
+
+function handleCamionControl(action) {
+  if (!action || currentPanel() !== "camion" || menuSelectorVisible) return false;
+  if (action.type === "contextual_action_1") {
+    publishCommand("camion", "cmd", "GO");
+    return true;
+  }
+  if (action.type === "contextual_action_2") {
+    publishCommand("camion", "cmd", "STOP");
+    return true;
+  }
+  return false;
+}
+
+function toggleMotor(prototypeId, motor) {
+  const current = state?.actuators?.[prototypeId]?.[motor];
+  const next = current === "ON" ? "OFF" : "ON";
+  publishCommand(prototypeId, motor, next);
+  return next;
+}
+
+function handleCintasControl(action) {
+  if (!action || currentPanel() !== "cintas" || menuSelectorVisible) return false;
+  if (action.type === "contextual_action_1") {
+    toggleMotor("chatarra", "motor1");
+    return true;
+  }
+  if (action.type === "contextual_action_2") {
+    toggleMotor("chatarra", "motor2");
+    return true;
+  }
+  return false;
+}
+
+function handleFundicionControl(action) {
+  if (!action || currentPanel() !== "represa" || menuSelectorVisible) return false;
+  if (action.type === "contextual_action_1") {
+    toggleMotor("fundicion", "motor1");
+    return true;
+  }
+  if (action.type === "contextual_action_2") {
+    const motor2 = state?.actuators?.fundicion?.motor2;
+    const motor3 = state?.actuators?.fundicion?.motor3;
+    const next = motor2 === "ON" && motor3 === "ON" ? "OFF" : "ON";
+    publishCommand("fundicion", "motor2", next);
+    publishCommand("fundicion", "motor3", next);
+    return true;
+  }
+  return false;
+}
+
+function publishPanelMode(panel, mode) {
+  (operationalModes[panel] || []).forEach((prototypeId) => publishCommand(prototypeId, "modo", mode));
+}
+
 function syncOperationalMode(panel) {
-  const operationalPanel = panel === "garra" && !menuSelectorVisible ? "garra" : null;
+  const operationalPanel = operationalModes[panel] && !menuSelectorVisible ? panel : null;
   if (operationalPanel === lastOperationalPanel) return;
+  if (lastOperationalPanel) {
+    publishPanelMode(lastOperationalPanel, "LOCAL");
+  }
   if (lastOperationalPanel === "garra" && garraRemoteActive) {
-    publishCommand("garra", "modo", "LOCAL");
     garraRemoteActive = false;
   }
   if (operationalPanel === "garra") {
     syncGarraValuesFromState();
-    publishCommand("garra", "modo", "REMOTO");
     garraRemoteActive = true;
+  }
+  if (operationalPanel) {
+    publishPanelMode(operationalPanel, "REMOTO");
   }
   lastOperationalPanel = operationalPanel;
 }
@@ -331,6 +412,10 @@ function renderDebug() {
 function renderModule(panel) {
   if (panel === "garra") return renderGarraPanel();
   if (panel === "ciudad") return renderCiudadPanel();
+  if (panel === "grua") return renderGruaPanel();
+  if (panel === "camion") return renderCamionPanel();
+  if (panel === "cintas") return renderCintasPanel();
+  if (panel === "represa") return renderFundicionPanel();
   const module = state.modules.find((item) => item.id === panel);
   const station = state.stations[panel] || {};
   const prototypes = (module?.prototypes || []).map((id) => state.prototypes[id]).filter(Boolean);
@@ -412,6 +497,106 @@ function renderCiudadPanel() {
   `;
 }
 
+function renderGruaPanel() {
+  const camera = state.cameras.streams[0];
+  const iman = state.actuators?.grua?.iman || "sin dato";
+  return `
+    <section class="module-panel operation-panel">
+      <div class="garra-stage">
+        <article class="garra-camera">
+          ${camera ? `<img src="${camera.url}" alt="${camera.label}" onerror="this.removeAttribute('src')">` : ""}
+          <footer>${camera?.label || "Camara Grua"}</footer>
+        </article>
+        <aside class="garra-controls">
+          <h1>Grua</h1>
+          <div class="control-line"><strong>Palanca izquierda/derecha</strong><span>Mover eje X</span></div>
+          <div class="control-line"><strong>Palanca arriba/abajo</strong><span>Mover eje Y</span></div>
+          <div class="control-line"><strong>Boton A</strong><span>Activar electroiman</span></div>
+          <div class="control-line"><strong>Boton B</strong><span>Desactivar electroiman</span></div>
+          <div class="servo-readouts">
+            <article><small>Electroiman</small><strong>${iman}</strong></article>
+          </div>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+
+function renderCamionPanel() {
+  const camera = state.cameras.streams[0];
+  const mode = state.prototypes?.camion?.mode || "sin dato";
+  return `
+    <section class="module-panel operation-panel">
+      <div class="garra-stage">
+        <article class="garra-camera">
+          ${camera ? `<img src="${camera.url}" alt="${camera.label}" onerror="this.removeAttribute('src')">` : ""}
+          <footer>${camera?.label || "Camara Camion"}</footer>
+        </article>
+        <aside class="garra-controls">
+          <h1>Camion</h1>
+          <div class="control-line"><strong>Boton A</strong><span>GO</span></div>
+          <div class="control-line"><strong>Boton B</strong><span>STOP</span></div>
+          <div class="servo-readouts">
+            <article><small>Comando</small><strong>${mode}</strong></article>
+          </div>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+
+function renderCintasPanel() {
+  const camera = state.cameras.streams[0];
+  const motor1 = state.actuators?.chatarra?.motor1 || "sin dato";
+  const motor2 = state.actuators?.chatarra?.motor2 || "sin dato";
+  return `
+    <section class="module-panel operation-panel">
+      <div class="garra-stage">
+        <article class="garra-camera">
+          ${camera ? `<img src="${camera.url}" alt="${camera.label}" onerror="this.removeAttribute('src')">` : ""}
+          <footer>${camera?.label || "Camara Cinta de minerales"}</footer>
+        </article>
+        <aside class="garra-controls">
+          <h1>Cinta de minerales</h1>
+          <div class="control-line"><strong>Boton A</strong><span>Alternar motor 1</span></div>
+          <div class="control-line"><strong>Boton B</strong><span>Alternar motor 2</span></div>
+          <div class="servo-readouts">
+            <article><small>Motor 1</small><strong>${motor1}</strong></article>
+            <article><small>Motor 2</small><strong>${motor2}</strong></article>
+          </div>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+
+function renderFundicionPanel() {
+  const camera = state.cameras.streams[0];
+  const motor1 = state.actuators?.fundicion?.motor1 || "sin dato";
+  const motor2 = state.actuators?.fundicion?.motor2 || "sin dato";
+  const motor3 = state.actuators?.fundicion?.motor3 || "sin dato";
+  return `
+    <section class="module-panel operation-panel">
+      <div class="garra-stage">
+        <article class="garra-camera">
+          ${camera ? `<img src="${camera.url}" alt="${camera.label}" onerror="this.removeAttribute('src')">` : ""}
+          <footer>${camera?.label || "Camara Cinta de fundicion"}</footer>
+        </article>
+        <aside class="garra-controls">
+          <h1>Cinta de fundicion</h1>
+          <div class="control-line"><strong>Boton A</strong><span>Alternar motor 1</span></div>
+          <div class="control-line"><strong>Boton B</strong><span>Alternar motor 2 y motor 3</span></div>
+          <div class="servo-readouts">
+            <article><small>Motor 1</small><strong>${motor1}</strong></article>
+            <article><small>Motor 2</small><strong>${motor2}</strong></article>
+            <article><small>Motor 3</small><strong>${motor3}</strong></article>
+          </div>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+
 function renderMain(panel) {
   const content = document.getElementById("content");
   if (panel === "debug") {
@@ -476,6 +661,10 @@ function applyArcadeAction(action) {
   if (!action) return;
   if (handleGarraControl(action)) return;
   if (handleCiudadControl(action)) return;
+  if (handleGruaControl(action)) return;
+  if (handleCamionControl(action)) return;
+  if (handleCintasControl(action)) return;
+  if (handleFundicionControl(action)) return;
   if (action.panel) {
     menuSelectorVisible = false;
     window.history.pushState({}, "", `/${action.panel}`);
@@ -511,7 +700,7 @@ function pollGamepads() {
     });
 
     const now = performance.now();
-    if (currentPanel() === "garra" && !menuSelectorVisible && now - garraControl.lastButtonRepeat > 150) {
+    if (["garra", "grua"].includes(currentPanel()) && !menuSelectorVisible && now - garraControl.lastButtonRepeat > 150) {
       if (pad.buttons[6]?.pressed || pad.buttons[6]?.value > 0.5) {
         garraControl.lastButtonRepeat = now;
         handleArcadeKey("06");

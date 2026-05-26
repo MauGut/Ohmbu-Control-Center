@@ -274,11 +274,18 @@ body {
   overflow: hidden;
 }
 
+.wind-card {
+  min-height: 170px;
+}
+
 .wind-gauge {
-  width: 100%;
-  height: 118px;
-  margin-top: -12px;
-  margin-bottom: -28px;
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 6px;
+  width: calc(100% - 16px);
+  height: 144px;
+  margin: 0;
 }
 
 .gauge-bg,
@@ -301,10 +308,13 @@ body {
   filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
 }
 
-.wind-card strong {
-  align-self: center;
-  margin-top: 0;
-  font-size: 42px !important;
+.wind-card strong:not(.error-value) {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  text-align: center;
+  font-size: 46px !important;
   font-weight: 400;
   z-index: 1;
 }

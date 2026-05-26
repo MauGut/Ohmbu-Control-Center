@@ -87,6 +87,10 @@
       "motor2": "fundicion/cmd/motor2",
       "motor3": "fundicion/cmd/motor3"
     },
+    "camion": {
+      "modo": "camion/CMD",
+      "cmd": "camion/CMD"
+    },
     "ciudad": {
       "rele1": "ciudad/cmd/rele1",
       "rele2": "ciudad/cmd/rele2"
