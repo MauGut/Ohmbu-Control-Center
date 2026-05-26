@@ -60,8 +60,7 @@ const panelCameraMap = {
   ciudad: "cam_ciudad",
   grua: "cam_grua",
   camion: "cam_camion",
-  cintas: "cam_cintas",
-  represa: "cam_represa"
+  cintas: "cam_cintas"
 };
 
 function cameraById(cameraId) {

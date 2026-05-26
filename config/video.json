@@ -3,14 +3,11 @@
   "go2rtcBaseUrl": "http://localhost:1984",
   "streamPathTemplate": "/api/stream.mjpeg?src={stream}",
   "cameras": [
+    { "id": "cam_cintas", "label": "Cam Cintas", "stream": "cam_cintas" },
     { "id": "cam_camion", "label": "Cam Camion", "stream": "cam_camion" },
     { "id": "cam_garra", "label": "Cam Garra", "stream": "cam_garra" },
     { "id": "cam_grua", "label": "Cam Grua", "stream": "cam_grua" },
-    { "id": "cam_ciudad", "label": "Cam Ciudad", "stream": "cam_ciudad" },
-    { "id": "cam_cintas", "label": "Cam Cintas", "stream": "cam_cintas" },
-    { "id": "cam_represa", "label": "Cam Represa", "stream": "cam_represa" },
-    { "id": "cam_extra_7", "label": "Cam Extra 7", "stream": "cam_extra_7" },
-    { "id": "cam_extra_8", "label": "Cam Extra 8", "stream": "cam_extra_8" }
+    { "id": "cam_ciudad", "label": "Cam Ciudad", "stream": "cam_ciudad" }
   ],
   "groups": {
     "sensores": ["cam_cintas", "cam_camion", "cam_garra"],
