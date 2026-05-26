@@ -3,24 +3,24 @@
   "go2rtcBaseUrl": "http://localhost:1984",
   "streamPathTemplate": "/api/stream.mjpeg?src={stream}",
   "cameras": [
-    { "id": "cam_garra", "label": "Cam Garra", "stream": "cam_garra" },
-    { "id": "cam_ciudad", "label": "Cam Ciudad", "stream": "cam_ciudad" },
-    { "id": "cam_grua", "label": "Cam Grua", "stream": "cam_grua" },
     { "id": "cam_camion", "label": "Cam Camion", "stream": "cam_camion" },
+    { "id": "cam_garra", "label": "Cam Garra", "stream": "cam_garra" },
+    { "id": "cam_grua", "label": "Cam Grua", "stream": "cam_grua" },
+    { "id": "cam_ciudad", "label": "Cam Ciudad", "stream": "cam_ciudad" },
     { "id": "cam_cintas", "label": "Cam Cintas", "stream": "cam_cintas" },
     { "id": "cam_represa", "label": "Cam Represa", "stream": "cam_represa" },
     { "id": "cam_extra_7", "label": "Cam Extra 7", "stream": "cam_extra_7" },
     { "id": "cam_extra_8", "label": "Cam Extra 8", "stream": "cam_extra_8" }
   ],
   "groups": {
-    "sensores": ["cam_garra", "cam_ciudad", "cam_represa"],
-    "camaras": ["cam_garra", "cam_ciudad", "cam_grua"],
-    "garra": ["cam_garra", "cam_ciudad", "cam_grua"],
-    "ciudad": ["cam_ciudad", "cam_camion", "cam_represa"],
-    "grua": ["cam_grua", "cam_garra", "cam_cintas"],
-    "camion": ["cam_camion", "cam_ciudad", "cam_cintas"],
-    "cintas": ["cam_cintas", "cam_grua", "cam_camion"],
-    "represa": ["cam_represa", "cam_ciudad", "cam_garra"],
-    "output": ["cam_garra", "cam_ciudad", "cam_represa"]
+    "sensores": ["cam_cintas", "cam_camion", "cam_garra"],
+    "camaras": ["cam_cintas", "cam_camion", "cam_garra"],
+    "garra": ["cam_cintas", "cam_camion", "cam_garra"],
+    "ciudad": ["cam_cintas", "cam_camion", "cam_garra"],
+    "grua": ["cam_cintas", "cam_camion", "cam_garra"],
+    "camion": ["cam_cintas", "cam_camion", "cam_garra"],
+    "cintas": ["cam_cintas", "cam_camion", "cam_garra"],
+    "represa": ["cam_cintas", "cam_camion", "cam_garra"],
+    "output": ["cam_cintas", "cam_camion", "cam_garra"]
   }
 }

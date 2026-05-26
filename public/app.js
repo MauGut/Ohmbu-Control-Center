@@ -55,6 +55,25 @@ const sensorMission = {
   crank_rpm: "2"
 };
 
+const panelCameraMap = {
+  garra: "cam_garra",
+  ciudad: "cam_ciudad",
+  grua: "cam_grua",
+  camion: "cam_camion",
+  cintas: "cam_cintas",
+  represa: "cam_represa"
+};
+
+function cameraById(cameraId) {
+  return (state?.cameras?.all || []).find((camera) => camera.id === cameraId)
+    || (state?.cameras?.streams || []).find((camera) => camera.id === cameraId)
+    || null;
+}
+
+function cameraForPanel(panel) {
+  return cameraById(panelCameraMap[panel]);
+}
+
 function displayValue(item) {
   const balizaId = sensorMission[item.id];
   if (balizaId && !state.balizas[balizaId]?.enabled) return "ERROR!";
@@ -450,13 +469,13 @@ function renderModule(panel) {
 }
 
 function renderGarraPanel() {
-  const camera = state.cameras.streams[2] || state.cameras.streams[0];
+  const camera = cameraForPanel("garra");
   return `
     <section class="module-panel garra-panel">
       <div class="garra-stage">
         <article class="garra-camera">
           ${camera ? `<img src="${camera.url}" alt="${camera.label}" onerror="this.removeAttribute('src')">` : ""}
-          <footer>${camera?.label || "Camara 3"}</footer>
+          <footer>${camera?.label || "Camara Garra"}</footer>
         </article>
         <aside class="garra-controls">
           <h1>Garra</h1>
@@ -475,7 +494,7 @@ function renderGarraPanel() {
 }
 
 function renderCiudadPanel() {
-  const camera = state.cameras.streams[0];
+  const camera = cameraForPanel("ciudad");
   const rele = state.actuators?.ciudad?.rele1 || "sin dato";
   return `
     <section class="module-panel operation-panel">
@@ -498,7 +517,7 @@ function renderCiudadPanel() {
 }
 
 function renderGruaPanel() {
-  const camera = state.cameras.streams[0];
+  const camera = cameraForPanel("grua");
   const iman = state.actuators?.grua?.iman || "sin dato";
   return `
     <section class="module-panel operation-panel">
@@ -523,7 +542,7 @@ function renderGruaPanel() {
 }
 
 function renderCamionPanel() {
-  const camera = state.cameras.streams[0];
+  const camera = cameraForPanel("camion");
   const mode = state.prototypes?.camion?.mode || "sin dato";
   return `
     <section class="module-panel operation-panel">
@@ -546,7 +565,7 @@ function renderCamionPanel() {
 }
 
 function renderCintasPanel() {
-  const camera = state.cameras.streams[0];
+  const camera = cameraForPanel("cintas");
   const motor1 = state.actuators?.chatarra?.motor1 || "sin dato";
   const motor2 = state.actuators?.chatarra?.motor2 || "sin dato";
   return `
@@ -571,7 +590,7 @@ function renderCintasPanel() {
 }
 
 function renderFundicionPanel() {
-  const camera = state.cameras.streams[0];
+  const camera = cameraForPanel("represa");
   const motor1 = state.actuators?.fundicion?.motor1 || "sin dato";
   const motor2 = state.actuators?.fundicion?.motor2 || "sin dato";
   const motor3 = state.actuators?.fundicion?.motor3 || "sin dato";

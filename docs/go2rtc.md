@@ -13,7 +13,7 @@ tools/go2rtc/go2rtc.exe
 La configuracion del relay esta en:
 
 ```text
-config/go2rtc.yaml
+tools/go2rtc/go2rtc.yaml
 ```
 
 Arranque desde la raiz del proyecto:
@@ -40,10 +40,10 @@ Configuracion actual:
 
 ```yaml
 streams:
-  cam_garra: http://192.168.88.150:81/stream
-  cam_ciudad: http://192.168.88.151:81/stream
+  cam_camion: http://192.168.88.150:81/stream
+  cam_garra: http://192.168.88.151:81/stream
   cam_grua: http://192.168.88.152:81/stream
-  cam_camion: http://192.168.88.153:81/stream
+  cam_ciudad: http://192.168.88.153:81/stream
   cam_cintas: http://192.168.88.154:81/stream
   cam_represa: http://192.168.88.155:81/stream
   cam_extra_7: http://192.168.88.156:81/stream
@@ -58,7 +58,7 @@ Stream desde go2rtc:
 
 ```text
 http://localhost:1984/api/stream.mjpeg?src=cam_garra
-http://localhost:1984/api/stream.mjpeg?src=cam_ciudad
+http://localhost:1984/api/stream.mjpeg?src=cam_camion
 http://localhost:1984/api/stream.mjpeg?src=cam_grua
 ```
 
@@ -73,5 +73,5 @@ http://192.168.88.152:81/stream
 ## Notas
 
 - Si una camara no esta conectada, go2rtc puede iniciar igual; el error aparece al intentar abrir ese stream.
-- Si el ejemplo de ESP se modifico para usar otro puerto, actualizar `config/go2rtc.yaml`.
+- Si el ejemplo de ESP se modifico para usar otro puerto, actualizar `tools/go2rtc/go2rtc.yaml`.
 - La UI del Control Center toma las URLs desde `config/video.json`, no desde codigo hardcodeado.
