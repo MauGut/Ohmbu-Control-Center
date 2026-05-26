@@ -145,6 +145,16 @@ app.post("/api/tecnica/balizas", (req, res) => {
   res.json({ ok: published.every((item) => item.ok), value, published });
 });
 
+app.post("/api/tecnica/osc/:column", (req, res) => {
+  const column = Number(req.params.column);
+  if (!Number.isInteger(column) || column < 1 || column > 5) {
+    return res.status(400).json({ ok: false, error: "Expected column 1 to 5" });
+  }
+  const address = `/composition/columns/${column}/connect`;
+  const ok = oscAdapter.sendMessage(address, [{ type: "i", value: 1 }], "resolume", "tecnica");
+  res.json({ ok, column, address, value: 1 });
+});
+
 const port = Number(process.env.PORT || config.system.port || 3000);
 server.listen(port, config.system.host, () => {
   console.log(`[OHMBU] Control Center listening on http://localhost:${port}`);

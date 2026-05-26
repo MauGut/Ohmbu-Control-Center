@@ -39,7 +39,38 @@ function createOscAdapter(config, store) {
     }
   }
 
-  return { sendScene };
+  function sendMessage(address, args = [], targetName = "resolume", source = "api") {
+    const targetConfig = config.osc[targetName];
+    if (!targetConfig) {
+      store.addOscLog({ target: targetName, address, source, status: "unknown-target" });
+      return false;
+    }
+
+    const message = { address, args };
+    const entry = {
+      target: targetName,
+      host: targetConfig.host,
+      port: targetConfig.port,
+      address,
+      argument: args.map((arg) => arg.value).join(","),
+      source
+    };
+
+    try {
+      if (config.osc.enabled && udpPort) {
+        udpPort.send(message, targetConfig.host, targetConfig.port);
+        store.addOscLog({ ...entry, status: "sent" });
+      } else {
+        store.addOscLog({ ...entry, status: "disabled-log-only" });
+      }
+      return true;
+    } catch (error) {
+      store.addOscLog({ ...entry, status: "error", error: error.message });
+      return false;
+    }
+  }
+
+  return { sendScene, sendMessage };
 }
 
 module.exports = { createOscAdapter };

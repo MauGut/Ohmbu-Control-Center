@@ -16,5 +16,22 @@ async function sendBalizas(value) {
   }
 }
 
+async function sendColumn(column) {
+  statusEl.textContent = `Enviando columna ${column}...`;
+  try {
+    const response = await fetch(`/api/tecnica/osc/${column}`, { method: "POST" });
+    const result = await response.json();
+    statusEl.textContent = response.ok
+      ? `OSC ${result.address} = 1`
+      : `Error: ${result.error || "OSC no enviado"}`;
+  } catch {
+    statusEl.textContent = "Error de conexion";
+  }
+}
+
+document.querySelectorAll("[data-osc-column]").forEach((button) => {
+  button.addEventListener("click", () => sendColumn(button.dataset.oscColumn));
+});
+
 document.getElementById("balizasOn").addEventListener("click", () => sendBalizas("ON"));
 document.getElementById("balizasOff").addEventListener("click", () => sendBalizas("OFF"));
