@@ -2,5 +2,5 @@
   "enabled": true,
   "address": "/escena",
   "magicq": { "host": "127.0.0.1", "port": 8000 },
-  "resolume": { "host": "127.0.0.1", "port": 7000 }
+  "resolume": { "host": "192.168.88.76", "port": 8000 }
 }
