@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OHMBU Tecnica</title>
+    <link rel="stylesheet" href="/tecnica.css">
+  </head>
+  <body>
+    <main class="technical-page">
+      <header>
+        <strong>OHMBU</strong>
+        <span>Panel tecnico</span>
+      </header>
+
+      <section class="number-pad" aria-label="Botones tecnicos">
+        <button type="button">1</button>
+        <button type="button">2</button>
+        <button type="button">3</button>
+        <button type="button">4</button>
+        <button type="button">5</button>
+      </section>
+
+      <section class="beacon-panel" aria-label="Balizas">
+        <h1>Balizas</h1>
+        <div class="beacon-actions">
+          <button id="balizasOff" class="beacon-button red" type="button">OFF</button>
+          <button id="balizasOn" class="beacon-button green" type="button">ON</button>
+        </div>
+        <p id="status" aria-live="polite">Listo</p>
+      </section>
+    </main>
+
+    <script src="/tecnica.js"></script>
+  </body>
+</html>

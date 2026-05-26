@@ -30,6 +30,10 @@ io.on("connection", (socket) => {
 });
 
 const panels = ["/", "/sensores", "/camaras", "/garra", "/ciudad", "/grua", "/camion", "/cintas", "/represa", "/debug", "/output"];
+app.get("/tecnica", (_req, res) => {
+  res.sendFile(path.join(config.root, "public", "tecnica.html"));
+});
+
 for (const route of panels) {
   app.get(route, (req, res) => {
     const panel = req.path === "/" ? "sensores" : req.path.slice(1);
@@ -128,6 +132,17 @@ app.post("/api/mqtt/command/:prototypeId/:command", (req, res) => {
   if (typeof value === "undefined") return res.status(400).json({ ok: false, error: "Expected value" });
   const ok = mqttAdapter.publishCommand(req.params.prototypeId, req.params.command, value, { source: "api" });
   res.status(ok ? 200 : 400).json({ ok, prototypeId: req.params.prototypeId, command: req.params.command, value });
+});
+
+app.post("/api/tecnica/balizas", (req, res) => {
+  const value = String(req.body?.value || "").toUpperCase();
+  if (!["ON", "OFF"].includes(value)) return res.status(400).json({ ok: false, error: "Expected value ON or OFF" });
+  const topics = Object.values(config.mqtt.balizaCommands || {});
+  const published = topics.map((topic) => ({
+    topic,
+    ok: mqttAdapter.publish(topic, value, { source: "tecnica" })
+  }));
+  res.json({ ok: published.every((item) => item.ok), value, published });
 });
 
 const port = Number(process.env.PORT || config.system.port || 3000);

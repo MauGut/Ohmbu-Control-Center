@@ -63,6 +63,16 @@
     "7": { "label": "Mision Ambiente", "topic": "/baliza/7/estado", "modules": ["ambientales", "vumetro"], "prototypes": ["ambientales", "vumetro"], "logic": "standard" },
     "8": { "label": "Mision Carga", "topic": "/baliza/8/estado", "modules": ["garra"], "prototypes": ["garra"], "logic": "standard" }
   },
+  "balizaCommands": {
+    "1": "/balizas/1/cmd",
+    "2": "/balizas/2/cmd",
+    "3": "/balizas/3/cmd",
+    "4": "/balizas/4/cmd",
+    "5": "/balizas/5/cmd",
+    "6": "/balizas/6/cmd",
+    "7": "/balizas/7/cmd",
+    "8": "/balizas/8/cmd"
+  },
   "commands": {
     "garra": {
       "modo": "garra/cmd/modo",
