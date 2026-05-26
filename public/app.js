@@ -597,6 +597,26 @@ function renderFundicionPanel() {
   `;
 }
 
+function renderCameraGrid() {
+  const cameras = state.cameras.all || state.cameras.streams || [];
+  return `
+    <section class="module-panel camera-grid-panel">
+      <h1>Camaras</h1>
+      <div class="full-camera-grid">
+        ${cameras.map((camera) => `
+          <article class="full-camera" tabindex="-1">
+            <img src="${camera.url}" alt="${camera.label}" onerror="this.removeAttribute('src')">
+            <footer>
+              <strong>${camera.label}</strong>
+              <span>${camera.stream}</span>
+            </footer>
+          </article>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
+
 function renderMain(panel) {
   const content = document.getElementById("content");
   if (panel === "debug") {
@@ -616,7 +636,11 @@ function renderMain(panel) {
     return;
   }
   document.getElementById("app").classList.remove("output-mode");
-  if (panel === "sensores" || panel === "camaras") {
+  if (panel === "camaras") {
+    content.innerHTML = renderCameraGrid();
+    return;
+  }
+  if (panel === "sensores") {
     content.innerHTML = `<div class="content-grid">${renderCards("Sensores", state.sensors, "sensor-grid")}${renderCards("Eficiencia energetica", state.energy, "energy-grid")}</div>`;
     return;
   }

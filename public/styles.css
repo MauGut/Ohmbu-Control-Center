@@ -500,6 +500,48 @@ body {
   font-size: 12px;
 }
 
+.camera-grid-panel h1 {
+  margin-bottom: 18px;
+}
+
+.full-camera-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.full-camera {
+  min-height: 260px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0c1417;
+  overflow: hidden;
+}
+
+.full-camera img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+  background: linear-gradient(135deg, #132329, #162b2f);
+}
+
+.full-camera footer {
+  min-height: 48px;
+  padding: 9px 12px;
+  display: grid;
+  gap: 2px;
+}
+
+.full-camera footer strong {
+  font-size: 15px;
+}
+
+.full-camera footer span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 pre {
   max-height: 62vh;
   overflow: auto;

@@ -108,15 +108,19 @@ function createInitialState(config) {
 function buildCameraState(config, panel) {
   const byId = Object.fromEntries(config.video.cameras.map((camera) => [camera.id, camera]));
   const group = config.video.groups[panel] || config.video.groups.sensores || [];
+  const withUrl = (camera) => {
+    const path = config.video.streamPathTemplate.replace("{stream}", encodeURIComponent(camera.stream));
+    return { ...camera, url: `${config.video.go2rtcBaseUrl}${path}` };
+  };
   return {
     mode: config.video.mode,
     baseUrl: config.video.go2rtcBaseUrl,
     activeGroup: panel,
+    all: config.video.cameras.map(withUrl),
     streams: group.slice(0, 3).map((id) => {
       const camera = byId[id];
       if (!camera) return null;
-      const path = config.video.streamPathTemplate.replace("{stream}", encodeURIComponent(camera.stream));
-      return { ...camera, url: `${config.video.go2rtcBaseUrl}${path}` };
+      return withUrl(camera);
     }).filter(Boolean)
   };
 }

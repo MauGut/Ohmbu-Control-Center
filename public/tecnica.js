@@ -19,10 +19,19 @@ async function sendBalizas(value) {
 async function sendColumn(column) {
   statusEl.textContent = `Enviando columna ${column}...`;
   try {
-    const response = await fetch(`/api/tecnica/osc/${column}`, { method: "POST" });
+    const requests = [fetch(`/api/tecnica/osc/${column}`, { method: "POST" })];
+    if (String(column) === "4") {
+      requests.push(fetch("/api/tecnica/balizas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: "OFF" })
+      }));
+    }
+    const [response, balizasResponse] = await Promise.all(requests);
     const result = await response.json();
+    const balizasResult = balizasResponse ? await balizasResponse.json() : null;
     statusEl.textContent = response.ok
-      ? `OSC ${result.address} = 1`
+      ? `OSC ${result.address} = 1${balizasResult ? " + balizas OFF" : ""}`
       : `Error: ${result.error || "OSC no enviado"}`;
   } catch {
     statusEl.textContent = "Error de conexion";
