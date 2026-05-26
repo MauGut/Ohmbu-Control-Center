@@ -1,0 +1,20 @@
+api:
+  listen: ":1984"
+
+rtsp:
+  listen: ":8554"
+
+webrtc:
+  listen: ":8555"
+
+streams:
+  cam_garra: http://192.168.88.150:81/stream
+  cam_ciudad: http://192.168.88.151:81/stream
+  cam_grua: http://192.168.88.152:81/stream
+
+  # Reservadas para las proximas ESP32-CAM.
+  cam_camion: http://192.168.88.153:81/stream
+  cam_cintas: http://192.168.88.154:81/stream
+  cam_represa: http://192.168.88.155:81/stream
+  cam_extra_7: http://192.168.88.156:81/stream
+  cam_extra_8: http://192.168.88.157:81/stream
